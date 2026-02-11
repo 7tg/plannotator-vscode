@@ -1,5 +1,3 @@
-# 📋 Plannotator for VS Code
-
 <p align="center">
   <img src="images/icon.png" alt="Plannotator for VS Code" width="128" />
 </p>
