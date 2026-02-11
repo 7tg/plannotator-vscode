@@ -1,17 +1,11 @@
 #!/bin/sh
 # Plannotator WebView Router
 # Invoked via PLANNOTATOR_BROWSER env var
-# Redirects URLs to VS Code Simple Browser via URI handler
+# Sends URL to the extension's local IPC server
 
 url="$1"
 [ -z "$url" ] && exit 0
+[ -z "$PLANNOTATOR_VSCODE_PORT" ] && exit 1
 
-# URL-encode using node (available alongside VS Code's `code` CLI)
 encoded=$(node -e "process.stdout.write(encodeURIComponent(process.argv[1]))" "$url")
-vscode_uri="vscode://plannotator-webview/open?url=${encoded}"
-
-code --open-url "$vscode_uri" 2>/dev/null && exit 0
-code-insiders --open-url "$vscode_uri" 2>/dev/null && exit 0
-
-echo "[plannotator-webview] Warning: 'code' CLI not found on PATH." >&2
-exit 1
+curl -s "http://127.0.0.1:${PLANNOTATOR_VSCODE_PORT}/open?url=${encoded}" >/dev/null 2>&1

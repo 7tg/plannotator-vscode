@@ -12,20 +12,21 @@ describe("activate", () => {
   });
 
   afterEach(() => {
+    // Dispose the IPC server
+    for (const sub of context.subscriptions) sub.dispose();
     for (const spy of spies) spy.mockRestore();
     spies.length = 0;
   });
 
-  it("registers a URI handler", () => {
-    const spy = spyOn(vscode.window, "registerUriHandler");
-    spies.push(spy);
+  it("starts IPC server and injects port env var when config enabled", async () => {
+    await activate(context as unknown as vscode.ExtensionContext);
 
-    activate(context as unknown as vscode.ExtensionContext);
-
-    expect(spy).toHaveBeenCalledTimes(1);
+    const port = context.environmentVariableCollection.get("PLANNOTATOR_VSCODE_PORT");
+    expect(port).toBeDefined();
+    expect(Number(port)).toBeGreaterThan(0);
   });
 
-  it("injects PLANNOTATOR_BROWSER env var when config is enabled", () => {
+  it("injects PLANNOTATOR_BROWSER env var when config is enabled", async () => {
     const spy = spyOn(vscode.workspace, "getConfiguration");
     spy.mockReturnValue({
       get(key: string, defaultValue?: unknown) {
@@ -35,14 +36,14 @@ describe("activate", () => {
     } as ReturnType<typeof vscode.workspace.getConfiguration>);
     spies.push(spy);
 
-    activate(context as unknown as vscode.ExtensionContext);
+    await activate(context as unknown as vscode.ExtensionContext);
 
     expect(context.environmentVariableCollection.get("PLANNOTATOR_BROWSER")).toBe(
       "/test/extension/path/bin/open-in-vscode",
     );
   });
 
-  it("does not inject env vars when injectBrowser is false", () => {
+  it("does not inject env vars when injectBrowser is false", async () => {
     const spy = spyOn(vscode.workspace, "getConfiguration");
     spy.mockReturnValue({
       get(key: string, defaultValue?: unknown) {
@@ -52,16 +53,17 @@ describe("activate", () => {
     } as ReturnType<typeof vscode.workspace.getConfiguration>);
     spies.push(spy);
 
-    activate(context as unknown as vscode.ExtensionContext);
+    await activate(context as unknown as vscode.ExtensionContext);
 
     expect(context.environmentVariableCollection.get("PLANNOTATOR_BROWSER")).toBeUndefined();
+    expect(context.environmentVariableCollection.get("PLANNOTATOR_VSCODE_PORT")).toBeUndefined();
   });
 
-  it("registers the openUrl command", () => {
+  it("registers the openUrl command", async () => {
     const spy = spyOn(vscode.commands, "registerCommand");
     spies.push(spy);
 
-    activate(context as unknown as vscode.ExtensionContext);
+    await activate(context as unknown as vscode.ExtensionContext);
 
     expect(spy).toHaveBeenCalledWith(
       "plannotator-webview.openUrl",
@@ -69,10 +71,10 @@ describe("activate", () => {
     );
   });
 
-  it("pushes disposables to context.subscriptions", () => {
-    activate(context as unknown as vscode.ExtensionContext);
+  it("pushes disposables to context.subscriptions", async () => {
+    await activate(context as unknown as vscode.ExtensionContext);
 
-    // URI handler + command = at least 2 subscriptions
+    // IPC server + command = at least 2 subscriptions
     expect(context.subscriptions.length).toBeGreaterThanOrEqual(2);
   });
 });

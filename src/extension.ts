@@ -1,17 +1,19 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { PlannotatorUriHandler } from "./uri-handler";
+import { createIpcServer } from "./ipc-server";
 
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const openInSimpleBrowser = (url: string) => {
     return vscode.commands.executeCommand("simpleBrowser.show", url);
   };
 
-  // Register URI handler for vscode://plannotator-webview/open?url=...
-  const uriHandler = new PlannotatorUriHandler(openInSimpleBrowser);
-  context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
+  // Start local IPC server to receive URLs from the router script
+  const { server, port } = await createIpcServer((url) => {
+    openInSimpleBrowser(url);
+  });
+  context.subscriptions.push({ dispose: () => server.close() });
 
-  // Inject PLANNOTATOR_BROWSER env var into integrated terminals
+  // Inject env vars into integrated terminals
   const config = vscode.workspace.getConfiguration("plannotatorWebview");
   const injectBrowser = config.get("injectBrowser", true) as boolean;
 
@@ -24,6 +26,10 @@ export function activate(context: vscode.ExtensionContext): void {
     context.environmentVariableCollection.replace(
       "PLANNOTATOR_BROWSER",
       routerPath,
+    );
+    context.environmentVariableCollection.replace(
+      "PLANNOTATOR_VSCODE_PORT",
+      String(port),
     );
   }
 
