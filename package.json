@@ -2,7 +2,7 @@
   "name": "plannotator-webview",
   "displayName": "Plannotator WebView",
   "description": "Opens Plannotator plan reviews inside VS Code tabs instead of an external browser",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "7tg",
   "license": "MIT",
   "repository": {
