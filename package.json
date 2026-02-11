@@ -1,0 +1,60 @@
+{
+  "name": "plannotator-webview",
+  "displayName": "Plannotator WebView",
+  "description": "Opens Plannotator plan reviews inside VS Code tabs instead of an external browser",
+  "version": "0.1.0",
+  "publisher": "7tg",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/7tg/plannotator-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/7tg/plannotator-vscode/issues"
+  },
+  "icon": "images/icon.png",
+  "categories": ["Other"],
+  "keywords": ["plannotator", "plan review", "claude", "ai", "webview"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "main": "./dist/extension.cjs",
+  "type": "module",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "plannotator-webview.openUrl",
+        "title": "Plannotator: Open URL in Simple Browser"
+      }
+    ],
+    "configuration": {
+      "title": "Plannotator WebView",
+      "properties": {
+        "plannotatorWebview.injectBrowser": {
+          "type": "boolean",
+          "default": true,
+          "description": "Inject PLANNOTATOR_BROWSER env var into integrated terminals to redirect plannotator to VS Code."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "bun run ./scripts/build.ts",
+    "watch": "bun run ./scripts/watch.ts",
+    "test": "bun test",
+    "lint": "tsc --noEmit",
+    "vsce-package": "vsce package --no-dependencies",
+    "package": "bun run build && bun run vsce-package",
+    "clean": "rm -rf ./dist"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.0.0"
+  }
+}
