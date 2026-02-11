@@ -6,49 +6,51 @@
 [![VS Code](https://img.shields.io/badge/VS%20Code-^1.85.0-blue?logo=visualstudiocode)](https://code.visualstudio.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Opens [Plannotator](https://github.com/backnotprop/plannotator) plan reviews inside VS Code tabs instead of an external browser. 🚀
+Opens [Plannotator](https://github.com/backnotprop/plannotator) plan reviews inside VS Code tabs instead of an external browser.
 
-## ✨ Features
+## Features
 
-- 🔄 Automatically intercepts Plannotator browser opens and displays them in VS Code's Simple Browser
-- 🤖 Works with Claude Code running in VS Code's integrated terminal
-- ⚙️ Configurable via VS Code settings
-- 🎯 Manual URL opening via command palette
+- Automatically intercepts Plannotator browser opens and displays them in a VS Code panel
+- Persists your Plannotator settings (identity, permissions, editor preferences) across sessions
+- Auto-closes the panel when you approve or send feedback on a plan
+- Works with Claude Code running in VS Code's integrated terminal
+- Configurable via VS Code settings
+- Manual URL opening via command palette
 
-## 🔧 How It Works
+## How It Works
 
-When Plannotator opens a browser to show a plan review, this extension intercepts the request and opens it in a VS Code tab instead:
+When Plannotator opens a browser to show a plan review, this extension intercepts the request and opens it in a VS Code panel instead:
 
-1. 💉 The extension injects a `PLANNOTATOR_BROWSER` environment variable into integrated terminals
-2. 🔀 When Plannotator opens a URL, the bundled router script redirects it to VS Code via a `vscode://` URI
-3. 🌐 The extension's URI handler receives the URL and opens it in Simple Browser
+1. The extension injects a `PLANNOTATOR_BROWSER` environment variable into integrated terminals
+2. When Plannotator opens a URL, the bundled router script sends it to the extension via a local HTTP server
+3. The extension opens the URL in a custom WebviewPanel with an embedded iframe
+4. A local reverse proxy handles cookie persistence (VS Code webview iframes don't support cookies natively) — settings are stored in VS Code's global state and restored transparently
 
-## 📦 Requirements
+## Requirements
 
 - [Plannotator](https://github.com/backnotprop/plannotator) installed
-- VS Code `code` CLI on PATH (run "Shell Command: Install 'code' command in PATH" from the command palette)
+- VS Code 1.85.0+
 
-## ⚙️ Configuration
+## Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `plannotatorWebview.injectBrowser` | `true` | Inject PLANNOTATOR_BROWSER env var into integrated terminals |
 
-## 🎮 Commands
+## Commands
 
-- **Plannotator: Open URL in Simple Browser** — Manually open a URL in the Simple Browser tab
+- **Plannotator: Open URL** — Manually open a Plannotator URL in a panel
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### URL opens in external browser instead of VS Code
-- ✅ Ensure the `code` CLI is on your PATH
-- ✅ Check that `plannotatorWebview.injectBrowser` is enabled
-- ✅ Open a **new** terminal after installing the extension (existing terminals won't have the env var)
+- Ensure `plannotatorWebview.injectBrowser` is enabled
+- Open a **new** terminal after installing the extension (existing terminals won't have the env var)
 
-### Simple Browser shows a blank page
-- ✅ Check if Plannotator's server is still running
-- ✅ Some network configurations may block localhost access from the webview
+### Panel shows a blank page
+- Check if Plannotator's server is still running
+- Some network configurations may block localhost access from the webview
 
-## 📄 License
+## License
 
 MIT
