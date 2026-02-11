@@ -1,7 +1,7 @@
 import type { BuildOptions } from "esbuild";
 
 const config: BuildOptions = {
-  entryPoints: ["./src/extension.ts", "./src/open-in-vscode.ts"],
+  entryPoints: ["./src/extension.ts"],
   bundle: true,
   platform: "node",
   target: "node18",

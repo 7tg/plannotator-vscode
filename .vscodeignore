@@ -1,6 +1,7 @@
 *
 */**
 
+!bin/*
 !dist/*
 !images/*
 !LICENSE

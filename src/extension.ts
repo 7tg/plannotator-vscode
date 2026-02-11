@@ -18,8 +18,8 @@ export function activate(context: vscode.ExtensionContext): void {
   if (injectBrowser) {
     const routerPath = path.join(
       context.extensionPath,
-      "dist",
-      "open-in-vscode.cjs",
+      "bin",
+      "open-in-vscode",
     );
     context.environmentVariableCollection.replace(
       "PLANNOTATOR_BROWSER",

@@ -38,7 +38,7 @@ describe("activate", () => {
     activate(context as unknown as vscode.ExtensionContext);
 
     expect(context.environmentVariableCollection.get("PLANNOTATOR_BROWSER")).toBe(
-      "/test/extension/path/dist/open-in-vscode.cjs",
+      "/test/extension/path/bin/open-in-vscode",
     );
   });
 
