@@ -32,9 +32,9 @@ describe("PanelManager", () => {
   it("sets iframe src in webview html", () => {
     let capturedHtml = "";
     const spy = spyOn(vscode.window, "createWebviewPanel");
-    spy.mockImplementation((..._args: unknown[]) => {
+    spy.mockImplementation((() => {
       let disposeListener: (() => void) | null = null;
-      const panel: vscode.WebviewPanel = {
+      return {
         webview: {
           get html() { return capturedHtml; },
           set html(v: string) { capturedHtml = v; },
@@ -45,9 +45,8 @@ describe("PanelManager", () => {
           disposeListener = listener;
           return { dispose() {} };
         },
-      };
-      return panel;
-    });
+      } as unknown as vscode.WebviewPanel;
+    }) as typeof vscode.window.createWebviewPanel);
     spies.push(spy);
 
     manager.open("http://127.0.0.1:9999/review?id=42");
