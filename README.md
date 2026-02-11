@@ -1,5 +1,9 @@
 # 📋 Plannotator for VS Code
 
+<p align="center">
+  <img src="images/icon.png" alt="Plannotator for VS Code" width="128" />
+</p>
+
 [![CI](https://github.com/7tg/plannotator-vscode/actions/workflows/ci.yml/badge.svg)](https://github.com/7tg/plannotator-vscode/actions/workflows/ci.yml)
 [![VS Code](https://img.shields.io/badge/VS%20Code-^1.85.0-blue?logo=visualstudiocode)](https://code.visualstudio.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
