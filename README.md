@@ -1,6 +1,6 @@
 # Plannotator WebView
 
-Opens [Plannotator](https://github.com/7tg/plannotator) plan reviews inside VS Code tabs instead of an external browser.
+Opens [Plannotator](https://github.com/backnotprop/plannotator) plan reviews inside VS Code tabs instead of an external browser.
 
 ## Features
 
@@ -19,7 +19,7 @@ When Plannotator opens a browser to show a plan review, this extension intercept
 
 ## Requirements
 
-- [Plannotator](https://github.com/7tg/plannotator) installed
+- [Plannotator](https://github.com/backnotprop/plannotator) installed
 - VS Code `code` CLI on PATH (run "Shell Command: Install 'code' command in PATH" from the command palette)
 
 ## Configuration
