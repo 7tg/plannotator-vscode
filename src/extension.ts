@@ -1,15 +1,45 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { createIpcServer } from "./ipc-server";
+import { createCookieProxy } from "./cookie-proxy";
+import { PanelManager } from "./panel-manager";
+
+const COOKIE_KEY = "plannotator-cookies";
+
+const log = vscode.window.createOutputChannel("Plannotator", { log: true });
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  const openInSimpleBrowser = (url: string) => {
-    return vscode.commands.executeCommand("simpleBrowser.show", url);
+  const panelManager = new PanelManager();
+  panelManager.setExtensionPath(context.extensionPath);
+
+  // Start cookie proxy for persisting webview state
+  const proxy = await createCookieProxy({
+    loadCookies: () => {
+      const cookies = context.globalState.get<string>(COOKIE_KEY) ?? "";
+      log.info(`[load] ${cookies.length} chars: ${cookies.slice(0, 120)}…`);
+      return cookies;
+    },
+    onSaveCookies: (cookies) => {
+      log.info(`[save] ${cookies.length} chars: ${cookies.slice(0, 120)}…`);
+      context.globalState.update(COOKIE_KEY, cookies);
+    },
+    onClose: () => {
+      log.info("[close] received close signal from plannotator");
+    },
+  });
+  context.subscriptions.push({ dispose: () => proxy.server.close() });
+
+  // Auto-close panel when plannotator signals completion
+  proxy.events.on("close", () => panelManager.close());
+
+  const openInPanel = (url: string) => {
+    panelManager.open(proxy.rewriteUrl(url));
+    vscode.window.showInformationMessage("Plannotator panel opened");
   };
 
   // Start local IPC server to receive URLs from the router script
   const { server, port } = await createIpcServer((url) => {
-    openInSimpleBrowser(url);
+    openInPanel(url);
   });
   context.subscriptions.push({ dispose: () => server.close() });
 
@@ -42,7 +72,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         placeHolder: "http://localhost:3000",
       });
       if (url) {
-        await openInSimpleBrowser(url);
+        openInPanel(url);
       }
     },
   );

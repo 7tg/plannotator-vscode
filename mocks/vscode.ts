@@ -17,6 +17,10 @@ export interface ExtensionContext {
     prepend(variable: string, value: string): void;
     delete(variable: string): void;
   };
+  globalState: {
+    get<T>(key: string, defaultValue?: T): T | undefined;
+    update(key: string, value: unknown): Thenable<void>;
+  };
 }
 
 export class Uri {
@@ -40,6 +44,10 @@ export class Uri {
     this.fragment = fragment;
   }
 
+  static file(fsPath: string): Uri {
+    return new Uri("file", "", fsPath, "", "");
+  }
+
   static parse(value: string): Uri {
     const parsed = new globalThis.URL(value);
     return new Uri(
@@ -59,6 +67,20 @@ export const commands = {
   async executeCommand(_command: string, ..._args: unknown[]) {},
 };
 
+export interface WebviewPanel {
+  webview: { html: string };
+  iconPath?: Uri;
+  reveal(viewColumn?: number): void;
+  dispose(): void;
+  onDidDispose(listener: () => void): { dispose(): void };
+}
+
+export const ViewColumn = {
+  One: 1,
+  Two: 2,
+  Three: 3,
+};
+
 export const window = {
   registerUriHandler(_handler: unknown) {
     return { dispose() {} };
@@ -68,6 +90,28 @@ export const window = {
   },
   async showInputBox(_options?: unknown) {
     return undefined;
+  },
+  createOutputChannel(_name: string, _options?: unknown) {
+    return { info() {}, warn() {}, error() {}, debug() {}, appendLine() {}, dispose() {} };
+  },
+  createWebviewPanel(
+    _viewType: string,
+    _title: string,
+    _showOptions: number,
+    _options?: { enableScripts?: boolean },
+  ): WebviewPanel {
+    let disposeListener: (() => void) | null = null;
+    return {
+      webview: { html: "" },
+      reveal() {},
+      dispose() {
+        disposeListener?.();
+      },
+      onDidDispose(listener: () => void) {
+        disposeListener = listener;
+        return { dispose() {} };
+      },
+    };
   },
 };
 
@@ -122,7 +166,18 @@ export function createMockExtensionContext(
     subscriptions: [] as { dispose: () => void }[],
     extensionPath,
     environmentVariableCollection: new MockEnvironmentVariableCollection(),
-    globalState: { get: () => undefined, update: async () => {} },
+    globalState: (() => {
+      const store = new Map<string, unknown>();
+      return {
+        get<T>(key: string, defaultValue?: T): T | undefined {
+          return (store.has(key) ? store.get(key) : defaultValue) as T | undefined;
+        },
+        update(key: string, value: unknown): Promise<void> {
+          store.set(key, value);
+          return Promise.resolve();
+        },
+      };
+    })(),
     workspaceState: { get: () => undefined, update: async () => {} },
   };
 }
