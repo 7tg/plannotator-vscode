@@ -9,7 +9,10 @@ export class PanelManager {
     this.extensionPath = p;
   }
 
-  open(url: string): vscode.WebviewPanel {
+  async open(url: string): Promise<vscode.WebviewPanel> {
+    const resolved = await vscode.env.asExternalUri(vscode.Uri.parse(url));
+    const resolvedUrl = resolved.toString();
+
     const panel = vscode.window.createWebviewPanel(
       "plannotator",
       "Plannotator",
@@ -19,7 +22,8 @@ export class PanelManager {
     panel.iconPath = vscode.Uri.file(
       path.join(this.extensionPath, "images", "icon.png"),
     );
-    panel.webview.html = getHtml(url);
+    const origin = `${resolved.scheme}://${resolved.authority}`;
+    panel.webview.html = getHtml(resolvedUrl, origin);
     this.panels.add(panel);
     panel.onDidDispose(() => {
       this.panels.delete(panel);
@@ -34,14 +38,14 @@ export class PanelManager {
   }
 }
 
-function getHtml(url: string): string {
+function getHtml(url: string, origin: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src 'unsafe-inline'; frame-src http://127.0.0.1:*;">
+        content="default-src 'none'; style-src 'unsafe-inline'; frame-src ${origin};">
   <style>
     body { margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     iframe { flex: 1; width: 100%; border: none; }

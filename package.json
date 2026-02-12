@@ -18,6 +18,7 @@
   "engines": {
     "vscode": "^1.85.0"
   },
+  "extensionKind": ["workspace", "ui"],
   "main": "./dist/extension.cjs",
   "type": "module",
   "activationEvents": [

@@ -58,6 +58,13 @@ export class Uri {
       parsed.hash.replace("#", ""),
     );
   }
+
+  toString(): string {
+    let result = `${this.scheme}://${this.authority}${this.path}`;
+    if (this.query) result += `?${this.query}`;
+    if (this.fragment) result += `#${this.fragment}`;
+    return result;
+  }
 }
 
 export const commands = {
@@ -112,6 +119,12 @@ export const window = {
         return { dispose() {} };
       },
     };
+  },
+};
+
+export const env = {
+  async asExternalUri(uri: Uri): Promise<Uri> {
+    return uri;
   },
 };
 

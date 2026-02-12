@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       },
     });
 
-    const panel = panelManager.open(proxy.rewriteUrl(url));
+    const panel = await panelManager.open(proxy.rewriteUrl(url));
 
     // Auto-close this specific panel when plannotator signals completion
     proxy.events.on("close", () => panel.dispose());
