@@ -11,7 +11,7 @@ const log = vscode.window.createOutputChannel("Plannotator", { log: true });
 /**
  * Detect shell type from terminal creation options or platform defaults
  */
-function detectShellType(terminal: vscode.Terminal): "bash" | "powershell" | "cmd" | "unknown" {
+function detectShellType(terminal: vscode.Terminal): "bash" | "powershell" | "cmd" {
   const creationOptions = terminal.creationOptions;
   
   // Try to detect from shellPath in creation options

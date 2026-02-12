@@ -110,7 +110,9 @@ export interface ExtensionTerminalOptions {
 const mockTerminals: Terminal[] = [];
 
 export const window = {
-  terminals: mockTerminals,
+  get terminals(): Terminal[] {
+    return [...mockTerminals];
+  },
   registerUriHandler(_handler: unknown) {
     return { dispose() {} };
   },
