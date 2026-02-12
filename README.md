@@ -32,8 +32,8 @@ When Plannotator opens a browser to show a plan review, this extension intercept
 ### For Claude Code as VS Code Extension:
 
 1. The extension registers an external URI opener for HTTP/HTTPS URLs
-2. When Claude Code (or any extension) tries to open a Plannotator URL via `vscode.env.openExternal()`, the opener intercepts it
-3. If the URL contains "plannotator", it opens in a VS Code panel instead of an external browser
+2. When Claude Code (or any extension) tries to open a localhost URL via `vscode.env.openExternal()`, the opener intercepts it
+3. If the URL is a localhost URL (matching `http://localhost:*`, `https://localhost:*`, `http://127.0.0.1:*`, or `https://127.0.0.1:*`), it opens in a VS Code panel instead of an external browser
 
 ### Cookie Persistence:
 
