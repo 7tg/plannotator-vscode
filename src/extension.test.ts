@@ -74,7 +74,8 @@ describe("activate", () => {
   it("pushes disposables to context.subscriptions", async () => {
     await activate(context as unknown as vscode.ExtensionContext);
 
-    // Cookie proxy + IPC server + command = at least 3 subscriptions
-    expect(context.subscriptions.length).toBeGreaterThanOrEqual(3);
+    // IPC server + command = at least 2 subscriptions
+    // (cookie proxies are created per-panel, not at activation)
+    expect(context.subscriptions.length).toBeGreaterThanOrEqual(2);
   });
 });

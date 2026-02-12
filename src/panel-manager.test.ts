@@ -56,29 +56,37 @@ describe("PanelManager", () => {
     );
   });
 
-  it("reuses existing panel on subsequent opens", () => {
+  it("creates a new panel on every open call", () => {
     const spy = spyOn(vscode.window, "createWebviewPanel");
     spies.push(spy);
 
     manager.open("http://127.0.0.1:9999/review");
     manager.open("http://127.0.0.1:9999/other");
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
-  it("creates new panel after previous one is disposed", () => {
+  it("returns the created panel", () => {
+    const panel = manager.open("http://127.0.0.1:9999/review");
+
+    expect(panel).toBeDefined();
+    expect(panel.webview).toBeDefined();
+  });
+
+  it("closeAll disposes all open panels", () => {
     const spy = spyOn(vscode.window, "createWebviewPanel");
     spies.push(spy);
 
     manager.open("http://127.0.0.1:9999/review");
-    manager.close();
-    manager.open("http://127.0.0.1:9999/review");
+    manager.open("http://127.0.0.1:9999/other");
+    manager.closeAll();
+    manager.open("http://127.0.0.1:9999/third");
 
-    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(3);
   });
 
-  it("close is a no-op when no panel exists", () => {
+  it("closeAll is a no-op when no panels exist", () => {
     // Should not throw
-    manager.close();
+    manager.closeAll();
   });
 });

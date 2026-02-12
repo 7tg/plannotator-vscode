@@ -12,28 +12,32 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const panelManager = new PanelManager();
   panelManager.setExtensionPath(context.extensionPath);
 
-  // Start cookie proxy for persisting webview state
-  const proxy = await createCookieProxy({
-    loadCookies: () => {
-      const cookies = context.globalState.get<string>(COOKIE_KEY) ?? "";
-      log.info(`[load] ${cookies.length} chars: ${cookies.slice(0, 120)}…`);
-      return cookies;
-    },
-    onSaveCookies: (cookies) => {
-      log.info(`[save] ${cookies.length} chars: ${cookies.slice(0, 120)}…`);
-      context.globalState.update(COOKIE_KEY, cookies);
-    },
-    onClose: () => {
-      log.info("[close] received close signal from plannotator");
-    },
-  });
-  context.subscriptions.push({ dispose: () => proxy.server.close() });
+  const openInPanel = async (url: string) => {
+    // Each panel gets its own cookie proxy so multiple agents
+    // can point to different upstream servers without conflicts.
+    const proxy = await createCookieProxy({
+      loadCookies: () => {
+        const cookies = context.globalState.get<string>(COOKIE_KEY) ?? "";
+        log.info(`[load] ${cookies.length} chars: ${cookies.slice(0, 120)}…`);
+        return cookies;
+      },
+      onSaveCookies: (cookies) => {
+        log.info(`[save] ${cookies.length} chars: ${cookies.slice(0, 120)}…`);
+        context.globalState.update(COOKIE_KEY, cookies);
+      },
+      onClose: () => {
+        log.info("[close] received close signal from plannotator");
+      },
+    });
 
-  // Auto-close panel when plannotator signals completion
-  proxy.events.on("close", () => panelManager.close());
+    const panel = panelManager.open(proxy.rewriteUrl(url));
 
-  const openInPanel = (url: string) => {
-    panelManager.open(proxy.rewriteUrl(url));
+    // Auto-close this specific panel when plannotator signals completion
+    proxy.events.on("close", () => panel.dispose());
+
+    // Clean up proxy server when the panel is closed
+    panel.onDidDispose(() => proxy.server.close());
+
     vscode.window.showInformationMessage("Plannotator panel opened");
   };
 

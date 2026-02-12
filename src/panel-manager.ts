@@ -2,36 +2,35 @@ import * as vscode from "vscode";
 import * as path from "path";
 
 export class PanelManager {
-  private panel: vscode.WebviewPanel | null = null;
+  private panels: Set<vscode.WebviewPanel> = new Set();
   private extensionPath: string = "";
 
   setExtensionPath(p: string): void {
     this.extensionPath = p;
   }
 
-  open(url: string): void {
-    if (this.panel) {
-      this.panel.webview.html = getHtml(url);
-      this.panel.reveal(vscode.ViewColumn.One);
-    } else {
-      this.panel = vscode.window.createWebviewPanel(
-        "plannotator",
-        "Plannotator",
-        vscode.ViewColumn.One,
-        { enableScripts: true, retainContextWhenHidden: true },
-      );
-      this.panel.iconPath = vscode.Uri.file(
-        path.join(this.extensionPath, "images", "icon.png"),
-      );
-      this.panel.webview.html = getHtml(url);
-      this.panel.onDidDispose(() => {
-        this.panel = null;
-      });
-    }
+  open(url: string): vscode.WebviewPanel {
+    const panel = vscode.window.createWebviewPanel(
+      "plannotator",
+      "Plannotator",
+      vscode.ViewColumn.One,
+      { enableScripts: true, retainContextWhenHidden: true },
+    );
+    panel.iconPath = vscode.Uri.file(
+      path.join(this.extensionPath, "images", "icon.png"),
+    );
+    panel.webview.html = getHtml(url);
+    this.panels.add(panel);
+    panel.onDidDispose(() => {
+      this.panels.delete(panel);
+    });
+    return panel;
   }
 
-  close(): void {
-    this.panel?.dispose();
+  closeAll(): void {
+    for (const panel of this.panels) {
+      panel.dispose();
+    }
   }
 }
 
