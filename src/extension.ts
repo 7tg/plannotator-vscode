@@ -97,11 +97,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     {
       canOpenExternalUri(uri: vscode.Uri): number | undefined {
         const urlString = uri.toString();
-        // Check if URL contains "plannotator" substring (matches both localhost and remote URLs)
+        // Check if URL contains "plannotator" - this matches the Plannotator UI URL pattern
+        // More specific matching (like hostname) isn't feasible since Plannotator can run
+        // on any localhost port, and the pattern must match both development and production URLs
+        // Note: While this could theoretically match unintended URLs (e.g., http://example.com?q=plannotator),
+        // in practice this is only triggered by vscode.env.openExternal() calls from other extensions
         if (urlString.includes("plannotator")) {
-          return 2; // Priority to handle this URL
+          // Priority 2 (higher than default 0) to intercept these URLs before the default browser opener
+          return 2;
         }
-        return undefined; // Don't handle this URL
+        return undefined; // Don't handle this URL - let default browser opener handle it
       },
       openExternalUri(uri: vscode.Uri): void {
         const urlString = uri.toString();

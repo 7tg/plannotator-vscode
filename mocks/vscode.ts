@@ -60,7 +60,8 @@ export class Uri {
   }
 
   static parse(value: string): Uri {
-    const parsed = new URL(value);
+    // Use globalThis.URL for explicit global scope reference
+    const parsed = new globalThis.URL(value);
     return new Uri(
       parsed.protocol.replace(":", ""),
       parsed.host,
