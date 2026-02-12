@@ -13,6 +13,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   panelManager.setExtensionPath(context.extensionPath);
 
   const openInPanel = async (url: string) => {
+    log.info(`[open] received url: ${url}`);
+
     // Each panel gets its own cookie proxy so multiple agents
     // can point to different upstream servers without conflicts.
     const proxy = await createCookieProxy({
@@ -43,7 +45,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // Start local IPC server to receive URLs from the router script
   const { server, port } = await createIpcServer((url) => {
-    openInPanel(url);
+    openInPanel(url).catch((err) => {
+      log.error(`[open] failed: ${err}`);
+      vscode.window.showErrorMessage(`Plannotator: ${err}`);
+    });
   });
   context.subscriptions.push({ dispose: () => server.close() });
 
@@ -76,7 +81,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         placeHolder: "http://localhost:3000",
       });
       if (url) {
-        openInPanel(url);
+        openInPanel(url).catch((err) => {
+          log.error(`[open] failed: ${err}`);
+          vscode.window.showErrorMessage(`Plannotator: ${err}`);
+        });
       }
     },
   );
