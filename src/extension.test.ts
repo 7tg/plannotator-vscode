@@ -78,7 +78,7 @@ describe("activate", () => {
     expect(context.subscriptions.length).toBeGreaterThanOrEqual(4);
   });
 
-  it("registers external URI opener for plannotator URLs", async () => {
+  it("registers external URI opener for localhost URLs", async () => {
     const windowWithOpener = vscode.window as typeof vscode.window & {
       registerExternalUriOpener?: (...args: any[]) => any;
     };
@@ -100,7 +100,7 @@ describe("activate", () => {
     );
   });
 
-  it("external URI opener returns priority for plannotator URLs", async () => {
+  it("external URI opener returns priority for localhost URLs", async () => {
     let capturedOpener: any;
     const windowWithOpener = vscode.window as typeof vscode.window & {
       registerExternalUriOpener?: (...args: any[]) => any;
@@ -114,12 +114,18 @@ describe("activate", () => {
 
     await activate(context as unknown as vscode.ExtensionContext);
 
-    const testUri = vscode.Uri.parse("http://localhost:3000/plannotator");
+    // Test localhost with port
+    const testUri = vscode.Uri.parse("http://localhost:3000/");
     const priority = capturedOpener.canOpenExternalUri(testUri);
     expect(priority).toBe(2);
+
+    // Test 127.0.0.1 with port
+    const testUri2 = vscode.Uri.parse("http://127.0.0.1:8080/review");
+    const priority2 = capturedOpener.canOpenExternalUri(testUri2);
+    expect(priority2).toBe(2);
   });
 
-  it("external URI opener returns undefined for non-plannotator URLs", async () => {
+  it("external URI opener returns undefined for non-localhost URLs", async () => {
     let capturedOpener: any;
     const windowWithOpener = vscode.window as typeof vscode.window & {
       registerExternalUriOpener?: (...args: any[]) => any;
