@@ -88,7 +88,38 @@ export const ViewColumn = {
   Three: 3,
 };
 
+// Mock Terminal
+export interface Terminal {
+  name: string;
+  processId: Thenable<number | undefined>;
+  creationOptions: Readonly<TerminalOptions | ExtensionTerminalOptions>;
+  exitStatus: { code: number } | undefined;
+  sendText(text: string, shouldExecute?: boolean): void;
+  show(preserveFocus?: boolean): void;
+  hide(): void;
+  dispose(): void;
+}
+
+export interface TerminalOptions {
+  name?: string;
+  shellPath?: string;
+  shellArgs?: string | string[];
+  cwd?: string | Uri;
+  env?: { [key: string]: string | null | undefined };
+}
+
+export interface ExtensionTerminalOptions {
+  name: string;
+  pty: unknown;
+}
+
+// Mock terminals storage for testing
+const mockTerminals: Terminal[] = [];
+
 export const window = {
+  get terminals(): Terminal[] {
+    return [...mockTerminals];
+  },
   registerUriHandler(_handler: unknown) {
     return { dispose() {} };
   },
@@ -193,4 +224,44 @@ export function createMockExtensionContext(
     })(),
     workspaceState: { get: () => undefined, update: async () => {} },
   };
+}
+
+// Helper to create a mock terminal for testing
+export function createMockTerminal(
+  name: string,
+  shellPath?: string
+): Terminal {
+  const sentTexts: string[] = [];
+  const creationOptions: TerminalOptions = {
+    name,
+    ...(shellPath && { shellPath }),
+  };
+  
+  const terminal: Terminal = {
+    name,
+    processId: Promise.resolve(Math.floor(Math.random() * 10000)),
+    creationOptions,
+    exitStatus: undefined,
+    sendText(text: string, _shouldExecute?: boolean) {
+      sentTexts.push(text);
+    },
+    show(_preserveFocus?: boolean) {},
+    hide() {},
+    dispose() {},
+  };
+  
+  // Store sent texts for test assertions
+  (terminal as any).sentTexts = sentTexts;
+  
+  return terminal;
+}
+
+// Helper to add a mock terminal to window.terminals
+export function addMockTerminal(terminal: Terminal): void {
+  mockTerminals.push(terminal);
+}
+
+// Helper to clear mock terminals
+export function clearMockTerminals(): void {
+  mockTerminals.length = 0;
 }
