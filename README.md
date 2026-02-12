@@ -22,7 +22,7 @@ Opens [Plannotator](https://github.com/backnotprop/plannotator) plan reviews ins
 
 When Plannotator opens a browser to show a plan review, this extension intercepts the request and opens it in a VS Code panel instead:
 
-1. The extension injects a `PLANNOTATOR_BROWSER` environment variable into integrated terminals
+1. The extension injects a `PLANNOTATOR_BROWSER` environment variable into integrated terminals (both existing and new)
 2. When Plannotator opens a URL, the bundled router script sends it to the extension via a local HTTP server
 3. The extension opens the URL in a custom WebviewPanel with an embedded iframe
 4. A local reverse proxy handles cookie persistence (VS Code webview iframes don't support cookies natively) — settings are stored in VS Code's global state and restored transparently
@@ -46,7 +46,8 @@ When Plannotator opens a browser to show a plan review, this extension intercept
 
 ### URL opens in external browser instead of VS Code
 - Ensure `plannotatorWebview.injectBrowser` is enabled
-- Open a **new** terminal after installing the extension (existing terminals won't have the env var)
+- Reload VS Code window after enabling the extension (Cmd/Ctrl+Shift+P → "Developer: Reload Window")
+- Check the Output panel (View → Output → Plannotator) for any error messages
 
 ### Panel shows a blank page
 - Check if Plannotator's server is still running
