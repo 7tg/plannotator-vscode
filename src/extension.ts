@@ -10,6 +10,8 @@ const log = vscode.window.createOutputChannel("Plannotator", { log: true });
 
 /**
  * Detect shell type from terminal creation options or platform defaults
+ * @param terminal - The VS Code terminal instance to analyze
+ * @returns The detected shell type: "bash" for bash/zsh/sh shells, "powershell" for PowerShell, or "cmd" for Windows Command Prompt
  */
 function detectShellType(terminal: vscode.Terminal): "bash" | "powershell" | "cmd" {
   const creationOptions = terminal.creationOptions;
@@ -37,6 +39,10 @@ function detectShellType(terminal: vscode.Terminal): "bash" | "powershell" | "cm
 
 /**
  * Inject environment variables into a terminal using sendText
+ * @param terminal - The VS Code terminal instance to inject variables into
+ * @param envVars - Object mapping environment variable names to their values
+ * @remarks This function sends shell-specific export commands to set the environment variables.
+ *          The commands are executed immediately via sendText(command, true).
  */
 function injectEnvVarsIntoTerminal(
   terminal: vscode.Terminal,
@@ -70,6 +76,9 @@ function injectEnvVarsIntoTerminal(
 
 /**
  * Inject environment variables into all existing terminals
+ * @param envVars - Object mapping environment variable names to their values
+ * @remarks Iterates through all open terminals and injects the environment variables
+ *          using shell-specific commands. Logs the operation to the output channel.
  */
 function injectEnvVarsIntoAllTerminals(envVars: Record<string, string>): void {
   const terminals = vscode.window.terminals;
