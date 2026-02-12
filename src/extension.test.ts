@@ -43,6 +43,37 @@ describe("activate", () => {
     );
   });
 
+  it("prepends bin/ to PATH when injectBrowser is enabled", async () => {
+    const spy = spyOn(vscode.workspace, "getConfiguration");
+    spy.mockReturnValue({
+      get(key: string, defaultValue?: unknown) {
+        if (key === "injectBrowser") return true;
+        return defaultValue;
+      },
+    } as ReturnType<typeof vscode.workspace.getConfiguration>);
+    spies.push(spy);
+
+    await activate(context as unknown as vscode.ExtensionContext);
+
+    const pathValue = context.environmentVariableCollection.get("PATH");
+    expect(pathValue).toContain("/test/extension/path/bin");
+  });
+
+  it("does not prepend PATH when injectBrowser is false", async () => {
+    const spy = spyOn(vscode.workspace, "getConfiguration");
+    spy.mockReturnValue({
+      get(key: string, defaultValue?: unknown) {
+        if (key === "injectBrowser") return false;
+        return defaultValue;
+      },
+    } as ReturnType<typeof vscode.workspace.getConfiguration>);
+    spies.push(spy);
+
+    await activate(context as unknown as vscode.ExtensionContext);
+
+    expect(context.environmentVariableCollection.get("PATH")).toBeUndefined();
+  });
+
   it("does not inject env vars when injectBrowser is false", async () => {
     const spy = spyOn(vscode.workspace, "getConfiguration");
     spy.mockReturnValue({

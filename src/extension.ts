@@ -57,11 +57,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const injectBrowser = config.get("injectBrowser", true) as boolean;
 
   if (injectBrowser) {
-    const routerPath = path.join(
-      context.extensionPath,
-      "bin",
-      "open-in-vscode",
-    );
+    const binDir = path.join(context.extensionPath, "bin");
+    const routerPath = path.join(binDir, "open-in-vscode");
     context.environmentVariableCollection.replace(
       "PLANNOTATOR_BROWSER",
       routerPath,
@@ -69,6 +66,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     context.environmentVariableCollection.replace(
       "PLANNOTATOR_VSCODE_PORT",
       String(port),
+    );
+    context.environmentVariableCollection.prepend(
+      "PATH",
+      binDir + path.delimiter,
     );
   }
 
