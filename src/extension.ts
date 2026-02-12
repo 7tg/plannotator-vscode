@@ -77,6 +77,46 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     },
   );
   context.subscriptions.push(openCommand);
+
+  // Register external URI opener to intercept URLs from Claude Code VSCode extension
+  // This uses optional chaining because the API might not be available in older VSCode versions
+  // Note: This API was added in VSCode 1.54 but may not be in all type definitions
+  const windowWithOpener = vscode.window as typeof vscode.window & {
+    registerExternalUriOpener?: (
+      id: string,
+      opener: {
+        canOpenExternalUri(uri: vscode.Uri): number | undefined;
+        openExternalUri(uri: vscode.Uri): void;
+      },
+      metadata: { schemes: string[]; label: string },
+    ) => vscode.Disposable;
+  };
+
+  const externalOpener = windowWithOpener.registerExternalUriOpener?.(
+    "plannotator-webview.opener",
+    {
+      canOpenExternalUri(uri: vscode.Uri): number | undefined {
+        const urlString = uri.toString();
+        // Check if URL contains "plannotator" substring (matches both localhost and remote URLs)
+        if (urlString.includes("plannotator")) {
+          return 2; // Priority to handle this URL
+        }
+        return undefined; // Don't handle this URL
+      },
+      openExternalUri(uri: vscode.Uri): void {
+        const urlString = uri.toString();
+        log.info(`[external-opener] Opening URL: ${urlString}`);
+        openInPanel(urlString);
+      },
+    },
+    {
+      schemes: ["http", "https"],
+      label: "Open Plannotator in VS Code",
+    },
+  );
+  if (externalOpener) {
+    context.subscriptions.push(externalOpener);
+  }
 }
 
 export function deactivate(): void {}

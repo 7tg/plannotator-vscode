@@ -15,17 +15,29 @@ Opens [Plannotator](https://github.com/backnotprop/plannotator) plan reviews ins
 - Persists your Plannotator settings (identity, permissions, editor preferences) across sessions
 - Auto-closes the panel when you approve or send feedback on a plan
 - Works with Claude Code running in VS Code's integrated terminal
+- Works with Claude Code as a VS Code extension
 - Configurable via VS Code settings
 - Manual URL opening via command palette
 
 ## How It Works
 
-When Plannotator opens a browser to show a plan review, this extension intercepts the request and opens it in a VS Code panel instead:
+When Plannotator opens a browser to show a plan review, this extension intercepts the request and opens it in a VS Code panel instead.
+
+### For Claude Code in Integrated Terminal:
 
 1. The extension injects a `PLANNOTATOR_BROWSER` environment variable into integrated terminals
 2. When Plannotator opens a URL, the bundled router script sends it to the extension via a local HTTP server
 3. The extension opens the URL in a custom WebviewPanel with an embedded iframe
-4. A local reverse proxy handles cookie persistence (VS Code webview iframes don't support cookies natively) — settings are stored in VS Code's global state and restored transparently
+
+### For Claude Code as VS Code Extension:
+
+1. The extension registers an external URI opener for HTTP/HTTPS URLs
+2. When Claude Code (or any extension) tries to open a Plannotator URL via `vscode.env.openExternal()`, the opener intercepts it
+3. If the URL contains "plannotator", it opens in a VS Code panel instead of an external browser
+
+### Cookie Persistence:
+
+A local reverse proxy handles cookie persistence (VS Code webview iframes don't support cookies natively) — settings are stored in VS Code's global state and restored transparently across sessions.
 
 ## Requirements
 

@@ -3,3 +3,4 @@ dist/
 *.vsix
 bun.lockb
 .vscode-test/
+package-lock.json

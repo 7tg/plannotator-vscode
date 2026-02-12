@@ -5,8 +5,19 @@ export interface UriHandler {
   handleUri(uri: Uri): ProviderResult<void>;
 }
 
+export interface ExternalUriOpener {
+  canOpenExternalUri?(uri: Uri): number | undefined;
+  openExternalUri(uri: Uri): void | Promise<void>;
+}
+
+export interface ExternalUriOpenerMetadata {
+  schemes: string[];
+  label: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
+export type ProviderResult<T> = T | undefined | null | Promise<T | undefined | null>;
+export type Thenable<T> = Promise<T>;
 
 export interface ExtensionContext {
   subscriptions: { dispose(): void }[];
@@ -19,7 +30,7 @@ export interface ExtensionContext {
   };
   globalState: {
     get<T>(key: string, defaultValue?: T): T | undefined;
-    update(key: string, value: unknown): Thenable<void>;
+    update(key: string, value: unknown): Promise<void>;
   };
 }
 
@@ -49,7 +60,7 @@ export class Uri {
   }
 
   static parse(value: string): Uri {
-    const parsed = new globalThis.URL(value);
+    const parsed = new URL(value);
     return new Uri(
       parsed.protocol.replace(":", ""),
       parsed.host,
@@ -57,6 +68,15 @@ export class Uri {
       parsed.search.replace("?", ""),
       parsed.hash.replace("#", ""),
     );
+  }
+
+  toString(): string {
+    let result = `${this.scheme}://`;
+    if (this.authority) result += this.authority;
+    result += this.path;
+    if (this.query) result += `?${this.query}`;
+    if (this.fragment) result += `#${this.fragment}`;
+    return result;
   }
 }
 
@@ -83,6 +103,13 @@ export const ViewColumn = {
 
 export const window = {
   registerUriHandler(_handler: unknown) {
+    return { dispose() {} };
+  },
+  registerExternalUriOpener(
+    _id: string,
+    _opener: ExternalUriOpener,
+    _metadata: ExternalUriOpenerMetadata,
+  ) {
     return { dispose() {} };
   },
   async showInformationMessage(_message: string) {
