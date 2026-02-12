@@ -74,7 +74,67 @@ describe("activate", () => {
   it("pushes disposables to context.subscriptions", async () => {
     await activate(context as unknown as vscode.ExtensionContext);
 
-    // Cookie proxy + IPC server + command = at least 3 subscriptions
-    expect(context.subscriptions.length).toBeGreaterThanOrEqual(3);
+    // Cookie proxy + IPC server + command + external URI opener = at least 4 subscriptions
+    expect(context.subscriptions.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("registers external URI opener for plannotator URLs", async () => {
+    const windowWithOpener = vscode.window as typeof vscode.window & {
+      registerExternalUriOpener?: (...args: any[]) => any;
+    };
+    const spy = spyOn(windowWithOpener, "registerExternalUriOpener" as any);
+    spies.push(spy);
+
+    await activate(context as unknown as vscode.ExtensionContext);
+
+    expect(spy).toHaveBeenCalledWith(
+      "plannotator-webview.opener",
+      expect.objectContaining({
+        canOpenExternalUri: expect.any(Function),
+        openExternalUri: expect.any(Function),
+      }),
+      expect.objectContaining({
+        schemes: ["http", "https"],
+        label: "Open Plannotator in VS Code",
+      }),
+    );
+  });
+
+  it("external URI opener returns priority for plannotator URLs", async () => {
+    let capturedOpener: any;
+    const windowWithOpener = vscode.window as typeof vscode.window & {
+      registerExternalUriOpener?: (...args: any[]) => any;
+    };
+    const spy = spyOn(windowWithOpener, "registerExternalUriOpener" as any);
+    spy.mockImplementation((_id: string, opener: any) => {
+      capturedOpener = opener;
+      return { dispose() {} };
+    });
+    spies.push(spy);
+
+    await activate(context as unknown as vscode.ExtensionContext);
+
+    const testUri = vscode.Uri.parse("http://localhost:3000/plannotator");
+    const priority = capturedOpener.canOpenExternalUri(testUri);
+    expect(priority).toBe(2);
+  });
+
+  it("external URI opener returns undefined for non-plannotator URLs", async () => {
+    let capturedOpener: any;
+    const windowWithOpener = vscode.window as typeof vscode.window & {
+      registerExternalUriOpener?: (...args: any[]) => any;
+    };
+    const spy = spyOn(windowWithOpener, "registerExternalUriOpener" as any);
+    spy.mockImplementation((_id: string, opener: any) => {
+      capturedOpener = opener;
+      return { dispose() {} };
+    });
+    spies.push(spy);
+
+    await activate(context as unknown as vscode.ExtensionContext);
+
+    const testUri = vscode.Uri.parse("http://example.com");
+    const priority = capturedOpener.canOpenExternalUri(testUri);
+    expect(priority).toBeUndefined();
   });
 });
